@@ -36,6 +36,7 @@ return [
     ]],
     ['label' => 'System', 'items' => [
         ['label' => 'Users',         'route' => 'users.index',         'can' => 'manage-users'],
+        ['label' => 'Roles',         'route' => 'roles.index',         'can' => 'manage-users'],
         ['label' => 'Settings',      'route' => 'settings.index',      'can' => 'manage-settings'],
         ['label' => 'Activity Logs', 'route' => 'activity-logs.index', 'can' => 'view-activity-logs'],
     ]],

@@ -25,6 +25,7 @@ class WasteCategoryTest extends TestCase
             'code' => 'pls',
             'name' => 'Plastik',
             'unit' => 'kg',
+            'waste_group' => 'anorganik',
             'is_active' => 1,
             'buy_price' => 2000,
             'sell_price' => 2500,
@@ -85,6 +86,22 @@ class WasteCategoryTest extends TestCase
             ->assertSessionHasErrors('unit');
     }
 
+    public function test_the_waste_group_is_required_and_must_be_one_of_the_four(): void
+    {
+        $admin = $this->userWithRole('admin');
+
+        foreach (['organik', 'anorganik', 'b3', 'residu'] as $i => $group) {
+            $this->actingAs($admin)->post(route('waste-categories.store'), $this->validData(['code' => 'G'.$i, 'name' => "Group {$group}", 'waste_group' => $group]))
+                ->assertSessionHasNoErrors();
+        }
+
+        $this->actingAs($admin)->post(route('waste-categories.store'), $this->validData(['code' => 'BAD', 'waste_group' => 'plastik']))->assertSessionHasErrors('waste_group');
+        $this->actingAs($admin)->post(route('waste-categories.store'), $this->validData(['code' => 'NOG', 'waste_group' => '']))->assertSessionHasErrors('waste_group');
+
+        $this->assertSame(4, \App\Models\WasteCategory::count());
+        $this->assertSame('b3', \App\Models\WasteCategory::where('code', 'G2')->value('waste_group'));
+    }
+
     public function test_update_does_not_touch_prices_and_can_deactivate(): void
     {
         $category = WasteCategory::factory()->create(['code' => 'PLS']);
@@ -92,7 +109,7 @@ class WasteCategoryTest extends TestCase
 
         $this->actingAs($this->userWithRole('admin'))
             ->put(route('waste-categories.update', $category), [
-                'code' => 'PLS', 'name' => 'Plastik Baru', 'unit' => 'kg', 'is_active' => 0,
+                'code' => 'PLS', 'name' => 'Plastik Baru', 'unit' => 'kg', 'waste_group' => 'anorganik', 'is_active' => 0,
             ])
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('waste-categories.index'));

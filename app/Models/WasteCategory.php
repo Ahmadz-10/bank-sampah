@@ -14,10 +14,14 @@ class WasteCategory extends Model
 
     public const UNITS = ['kg' => 'kg', 'liter' => 'liter', 'pcs' => 'pcs'];
 
-    protected $fillable = ['code', 'name', 'unit', 'description', 'is_active'];
+    /** The four groups of the kelurahan's weighbridge report. value => label key */
+    public const GROUPS = ['organik' => 'Organic', 'anorganik' => 'Inorganic', 'b3' => 'B3 (hazardous)', 'residu' => 'Residue'];
+
+    protected $fillable = ['code', 'name', 'unit', 'waste_group', 'description', 'is_active'];
 
     protected $attributes = [
         'unit' => 'kg',
+        'waste_group' => 'anorganik',
         'is_active' => true,
     ];
 
@@ -29,6 +33,16 @@ class WasteCategory extends Model
     public function prices(): HasMany
     {
         return $this->hasMany(WastePrice::class);
+    }
+
+    public function depositDetails(): HasMany
+    {
+        return $this->hasMany(WasteDepositDetail::class);
+    }
+
+    public function saleDetails(): HasMany
+    {
+        return $this->hasMany(WasteSaleDetail::class);
     }
 
     /**

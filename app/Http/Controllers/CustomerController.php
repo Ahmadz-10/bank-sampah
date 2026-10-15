@@ -48,6 +48,25 @@ class CustomerController extends Controller
             ->with('status', __('Customer :code was created.', ['code' => $customer->customer_code]));
     }
 
+    /** Detail page: customer data, household, and deposit history with totals. */
+    public function show(Customer $customer): View
+    {
+        $customer->load('household');
+
+        $deposits = $customer->deposits()
+            ->orderByDesc('deposit_date')
+            ->orderByDesc('id')
+            ->limit(25)
+            ->get();
+
+        $totals = $customer->deposits()
+            ->toBase()
+            ->selectRaw('count(*) as cnt, coalesce(sum(total_weight), 0) as weight, coalesce(sum(total_amount), 0) as amount')
+            ->first();
+
+        return view('customers.show', compact('customer', 'deposits', 'totals'));
+    }
+
     public function edit(Customer $customer): View
     {
         return view('customers.form', [

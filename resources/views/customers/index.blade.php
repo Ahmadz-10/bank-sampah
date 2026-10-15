@@ -44,7 +44,9 @@
                 <tbody>
                     @forelse ($customers as $customer)
                         <tr>
-                            <td class="text-nowrap">{{ $customer->customer_code }}</td>
+                            <td class="text-nowrap">
+                                <a href="{{ route('customers.show', $customer) }}" class="text-decoration-none">{{ $customer->customer_code }}</a>
+                            </td>
                             <td>{{ $customer->name }}</td>
                             <td class="text-nowrap">
                                 @if ($customer->household)
@@ -62,6 +64,7 @@
                                 </span>
                             </td>
                             <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ route('customers.show', $customer) }}">{{ __('View') }}</a>
                                 <a class="btn btn-sm btn-outline-primary" href="{{ route('customers.edit', $customer) }}">{{ __('Edit') }}</a>
                                 <form method="POST" action="{{ route('customers.destroy', $customer) }}" class="d-inline"
                                       data-confirm="{{ __('Delete this customer?') }}">

@@ -20,6 +20,7 @@ return [
         ['label' => 'Customers',        'route' => 'customers.index',        'can' => 'manage-customers'],
         ['label' => 'Waste Categories', 'route' => 'waste-categories.index', 'can' => 'manage-master-data'],
         ['label' => 'Waste Prices',     'route' => 'waste-prices.index',     'can' => 'manage-master-data'],
+        ['label' => 'RWs',              'route' => 'rws.index',              'can' => 'manage-master-data'],
     ]],
     ['label' => 'Household Survey', 'items' => [
         ['label' => 'Surveys', 'route' => 'household-surveys.index', 'can' => 'survey-households'],
@@ -29,6 +30,7 @@ return [
         ['label' => 'Sales',    'route' => 'waste-sales.index',    'can' => 'manage-transactions'],
     ]],
     ['label' => 'Monitoring', 'items' => [
+        ['label' => 'Weighing Sheet',  'route' => 'waste-weighings.index',  'can' => 'manage-weighings'],
         ['label' => 'Waste Reduction', 'route' => 'waste-reductions.index', 'can' => 'manage-monitoring'],
     ]],
     ['label' => 'Reports', 'items' => [

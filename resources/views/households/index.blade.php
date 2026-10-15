@@ -46,14 +46,17 @@
                 <tbody>
                     @forelse ($households as $household)
                         <tr>
-                            <td class="text-nowrap">{{ $household->household_code }}</td>
+                            <td class="text-nowrap">
+                                <a href="{{ route('households.show', $household) }}" class="text-decoration-none">{{ $household->household_code }}</a>
+                            </td>
                             <td>{{ $household->head_name }}</td>
                             <td>{{ $household->address }}</td>
-                            <td class="text-nowrap">{{ $household->rt ?: '-' }} / {{ $household->rw ?: '-' }}</td>
+                            <td class="text-nowrap">{{ $household->rt ?: '-' }} / {{ $household->rw?->name ?? '-' }}</td>
                             <td class="text-center">{{ $household->member_count }}</td>
                             <td><span class="badge text-bg-{{ $household->statusBadge() }}">{{ $household->statusLabel() }}</span></td>
                             <td class="text-center">{{ $household->customers_count }}</td>
                             <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ route('households.show', $household) }}">{{ __('View') }}</a>
                                 <a class="btn btn-sm btn-outline-primary" href="{{ route('households.edit', $household) }}">{{ __('Edit') }}</a>
                                 <form method="POST" action="{{ route('households.destroy', $household) }}" class="d-inline"
                                       data-confirm="{{ __('Delete this household?') }}">

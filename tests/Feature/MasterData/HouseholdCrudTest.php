@@ -3,6 +3,7 @@
 namespace Tests\Feature\MasterData;
 
 use App\Models\Household;
+use App\Models\Rw;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesUsersWithRoles;
 use Tests\TestCase;
@@ -24,7 +25,7 @@ class HouseholdCrudTest extends TestCase
             'head_name' => 'Budi Santoso',
             'address' => 'Jl. Melati No. 5',
             'rt' => '001',
-            'rw' => '002',
+            'rw_id' => Rw::where('number', 2)->value('id'),
             'phone' => '081234567890',
             'member_count' => 4,
         ], $overrides);
@@ -64,6 +65,37 @@ class HouseholdCrudTest extends TestCase
         $this->assertMatchesRegularExpression('/^RMH-\d{4}$/', $household->household_code);
         $this->assertSame($officer->id, $household->created_by);
         $this->assertSame('unknown', $household->fresh()->sorting_status);
+    }
+
+    public function test_a_household_is_linked_to_an_rw_and_the_list_shows_its_name(): void
+    {
+        $this->actingAs($this->userWithRole('officer'))
+            ->post(route('households.store'), $this->validData())
+            ->assertSessionHasNoErrors();
+
+        $household = Household::firstOrFail();
+        $this->assertSame('RW 02', $household->rw->name);
+
+        $this->actingAs($this->userWithRole('officer'))->get(route('households.index'))->assertSee('RW 02');
+    }
+
+    public function test_the_rw_is_optional_but_must_exist_when_given(): void
+    {
+        $officer = $this->userWithRole('officer');
+
+        $this->actingAs($officer)->post(route('households.store'), $this->validData(['rw_id' => null]))->assertSessionHasNoErrors();
+        $this->assertNull(Household::firstOrFail()->rw_id);
+
+        $this->actingAs($officer)->post(route('households.store'), $this->validData(['rw_id' => 9999]))->assertSessionHasErrors('rw_id');
+    }
+
+    public function test_the_form_offers_only_active_rws(): void
+    {
+        Rw::where('number', 11)->update(['is_active' => false]);
+
+        $this->actingAs($this->userWithRole('officer'))->get(route('households.create'))
+            ->assertOk()
+            ->assertViewHas('rwOptions', fn ($options) => count($options) === 10 && ! in_array('RW 11', $options, true));
     }
 
     public function test_codes_are_never_reused_even_after_a_soft_delete(): void

@@ -14,6 +14,7 @@ class WasteCategoryFactory extends Factory
             'code' => strtoupper(fake()->unique()->lexify('???')),
             'name' => fake()->unique()->words(2, true),
             'unit' => 'kg',
+            'waste_group' => 'anorganik',
             'description' => null,
             'is_active' => true,
         ];

@@ -24,7 +24,9 @@
 
         <div class="row">
             <div class="col-md-4"><x-form.input name="rt" label="RT" :value="$household->rt" /></div>
-            <div class="col-md-4"><x-form.input name="rw" label="RW" :value="$household->rw" /></div>
+            <div class="col-md-4">
+                <x-form.select name="rw_id" label="RW" :options="$rwOptions" :value="$household->rw_id" placeholder="No RW" />
+            </div>
             <div class="col-md-4">
                 <x-form.input name="member_count" label="Family members" type="number" min="1" :value="$household->member_count" required />
             </div>

@@ -16,6 +16,7 @@
                         <th>{{ __('Code') }}</th>
                         <th>{{ __('Name') }}</th>
                         <th>{{ __('Unit') }}</th>
+                        <th>{{ __('Waste group') }}</th>
                         <th class="text-end">{{ __('Buy price') }}</th>
                         <th class="text-end">{{ __('Sell price') }}</th>
                         <th>{{ __('Status') }}</th>
@@ -29,6 +30,7 @@
                             <td class="text-nowrap">{{ $category->code }}</td>
                             <td>{{ $category->name }}</td>
                             <td>{{ $category->unit }}</td>
+                            <td>{{ __(\App\Models\WasteCategory::GROUPS[$category->waste_group] ?? $category->waste_group) }}</td>
                             <td class="text-end text-nowrap">
                                 {{ $current ? 'Rp '.number_format((float) $current->buy_price, 0, ',', '.') : '-' }}
                             </td>
@@ -46,7 +48,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-body-secondary py-4">{{ __('No data found.') }}</td></tr>
+                        <tr><td colspan="8" class="text-center text-body-secondary py-4">{{ __('No data found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

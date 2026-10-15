@@ -18,8 +18,8 @@ class Household extends Model
     public const STATUS_NOT_SORTING = 'not_sorting';
 
     // household_code and sorting_status are deliberately not fillable:
-    // the code is generated, and the status is derived from validated surveys (Phase 3).
-    protected $fillable = ['head_name', 'address', 'rt', 'rw', 'phone', 'member_count'];
+    // the code is generated, and the status is derived from validated surveys (see refreshSortingStatus()).
+    protected $fillable = ['head_name', 'address', 'rt', 'rw_id', 'phone', 'member_count'];
 
     protected $attributes = [
         'sorting_status' => self::STATUS_UNKNOWN,
@@ -41,9 +41,35 @@ class Household extends Model
         return $this->hasMany(Customer::class);
     }
 
+    public function rw(): BelongsTo
+    {
+        return $this->belongsTo(Rw::class, 'rw_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(HouseholdSurvey::class);
+    }
+
+    /**
+     * Recalculate the current sorting status from the latest VALIDATED survey
+     * (newest survey_date wins; ties broken by id). No validated survey = unknown.
+     * Call this whenever a survey is validated, reopened, or removed.
+     */
+    public function refreshSortingStatus(): void
+    {
+        $latest = $this->surveys()
+            ->where('validation_status', HouseholdSurvey::VALIDATED)
+            ->orderByDesc('survey_date')
+            ->orderByDesc('id')
+            ->first();
+
+        $this->forceFill(['sorting_status' => $latest?->sorting_status ?? self::STATUS_UNKNOWN])->save();
     }
 
     public function statusLabel(): string

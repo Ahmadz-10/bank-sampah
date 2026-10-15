@@ -30,7 +30,7 @@ class WasteCategoryController extends Controller
     public function store(WasteCategoryRequest $request): RedirectResponse
     {
         $category = DB::transaction(function () use ($request) {
-            $category = WasteCategory::create($request->safe()->only(['code', 'name', 'unit', 'description', 'is_active']));
+            $category = WasteCategory::create($request->safe()->only(['code', 'name', 'unit', 'waste_group', 'description', 'is_active']));
 
             $price = new WastePrice($request->safe()->only(['buy_price', 'sell_price', 'effective_date']));
             $price->waste_category_id = $category->id;

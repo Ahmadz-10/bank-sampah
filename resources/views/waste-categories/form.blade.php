@@ -21,6 +21,9 @@
         </div>
 
         <x-form.select name="unit" label="Unit" :options="\App\Models\WasteCategory::UNITS" :value="$category->unit" required />
+        <x-form.select name="waste_group" label="Waste group" :options="collect(\App\Models\WasteCategory::GROUPS)->map(fn ($label) => __($label))->all()"
+                       :value="$category->waste_group" required
+                       help="Decides which column of the weighbridge report this category belongs to." />
         <x-form.textarea name="description" label="Description" :value="$category->description" rows="2" />
 
         @unless ($category->exists)

@@ -29,6 +29,7 @@ class WasteCategoryRequest extends FormRequest
             'code' => ['required', 'string', 'max:20', 'alpha_dash', Rule::unique('waste_categories', 'code')->ignore($category?->id)],
             'name' => ['required', 'string', 'max:100'],
             'unit' => ['required', Rule::in(array_keys(WasteCategory::UNITS))],
+            'waste_group' => ['required', Rule::in(array_keys(WasteCategory::GROUPS))],
             'description' => ['nullable', 'string', 'max:500'],
             'is_active' => ['boolean'],
         ];

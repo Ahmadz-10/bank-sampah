@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\DashboardService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Placeholder. The real dashboard (statistics) is built in Phase 6.
+ * The numbers come from DashboardService, which decides per role what may be shown.
  */
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request, DashboardService $dashboard): View
     {
-        return view('dashboard');
+        return view('dashboard', ['dashboard' => $dashboard->forUser($request->user())]);
     }
 }

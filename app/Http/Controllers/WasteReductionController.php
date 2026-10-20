@@ -43,6 +43,7 @@ class WasteReductionController extends Controller
 
         return view('waste-reductions.index', [
             'rows' => $rows,
+            'chart' => $this->monitoring->reductionChart($rows),
             'year' => $year,
             'years' => $years,
             'totals' => [

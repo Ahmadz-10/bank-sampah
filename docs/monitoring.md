@@ -39,7 +39,7 @@ Use `migrate`, **not** `migrate:fresh`, if you already have data you want to kee
 What the four new migrations do:
 
 1. Create `rws` and insert **RW 01 to RW 11** (reference data, so every environment has them).
-2. Add `households.rw_id` and **convert the old free-text RW** (`002`, `RW 02`, `2` all become RW 02). Values that match no RW (for example `12`) stay unlinked and can be fixed on the household's edit page. The old `rw` text column is left in place, unused, so no data is lost.
+2. Add `households.rw_id` and **convert the old free-text RW** (`002`, `RW 02`, `2` all become RW 02). Values that match no RW (for example `12`) stay unlinked and can be fixed on the household's edit page. The old `rw` text column is kept by that migration so no data is lost, then removed by `2026_10_15_000001_drop_legacy_rw_column_from_households_table` (a leftover `rw` column shadows the `rw()` relation, so `$household->rw` would return null).
 3. Add `waste_categories.waste_group`. Existing categories default to *Anorganik*.
 4. Create `rw_waste_reports` (one row per RW per month).
 
@@ -51,7 +51,7 @@ The seeder loads the six real categories and prices. It **updates** `PLS`, `KRT`
 | --- | --- | --- |
 | **RWs** (Master Data) | Admin | RW 01-11 with chairman name and the official number of households (Jumlah KK). RWs are deactivated, never deleted |
 | **Weighing Sheet** (Monitoring) | Admin, Petugas | Pick a month; one editable row per RW: kg/day for Organik, Anorganik, B3, Residu, plus carts, collectors, pickup frequency, days counted and remarks. Totals update as you type |
-| **Waste Reduction** (Monitoring) | Admin | Twelve months of one year: total generated, diverted, to TPS, reduction %, target %, and the weight recorded through bank sampah deposits as a cross-check. Only the **target** and a note can be edited |
+| **Waste Reduction** (Monitoring) | Admin | Twelve months of one year: total generated, diverted, to TPS, reduction %, target %, and the weight recorded through bank sampah deposits as a cross-check. Only the **target** and a note can be edited. A line chart above the table plots reduction % against target % for the year |
 | Waste Categories | Admin | New **waste group** field (Organik / Anorganik / B3 / Residu) |
 | Households | Admin, Petugas | RW is now a dropdown of the real RWs, and the household list shows the RW name |
 
@@ -104,19 +104,24 @@ These are **defaults I chose**, not facts. Until confirmed, treat the percentage
 2. **Households:** edit a household and pick its RW. The list shows "RW 02". Old households were converted by the migration.
 3. **Categories:** Organik, Plastik, Kertas, Logam, B3 and Residu exist with the real prices. Open **Waste Prices** to see them.
 4. **Weighing Sheet:** fill RW 01 and RW 02 (try 100 / 50 / 2 / 80 for RW 01). Row totals update while typing. Save.
-5. **Waste Reduction:** the month now shows total, diverted, to TPS and the reduction %. Set a target and see *Target met* or *Below target*.
+5. **Waste Reduction:** the month now shows total, diverted, to TPS and the reduction %. Set a target and see *Target met* or *Below target*. Above the table the chart shows *Pengurangan* (solid) and *Target* (dashed) for each weighed month; months with no weighing are left blank. Pick a year with no data and the chart is replaced by a short message.
 6. Clear RW 02's row and save: it disappears from the count, and the month recalculates.
 7. As `petugas@banksampah.test`: Weighing Sheet works; RWs and Waste Reduction are not in the menu (403 by URL). As `pimpinan@`: none of them.
 
 ## 7. For the next phases
 
-- **Phase 6 (Dashboard)** can use `MonthlyWasteReduction` for the reduction-vs-target chart and `RwWasteReport` for a per-RW comparison.
+- **Phase 6 (Dashboard)** can use `MonthlyWasteReduction` for the reduction-vs-target chart and `RwWasteReport` for a per-RW comparison. The dashboard (Phase 6, see `docs/dashboard.md`) now does this, reusing `MonitoringService::reductionChart()` and the shared `<x-chart>` component.
+- **Chart library (decision D4):** Chart.js (MIT). Install with `npm install chart.js`. It lives in its own `charts` bundle, loaded only on pages that contain a chart, so other pages are unaffected. The chart reads Bootstrap's colour variables, so it follows the user's light/dark theme.
 - **Phase 7 (Reports)** should reproduce the workbook layout as a "Laporan timbangan sampah" for a month, exported as **.xlsx**, because the kelurahan works in Excel. That needs a spreadsheet library (decision D3).
 - **Phase 8 (Settings)** should hold the kelurahan, kecamatan and city for report headers.
 - The Phase 5 contract in `task-split.md` (hand-typed monthly records and a "suggest" endpoint) is **replaced** by the design above: records are calculated, not typed.
 
 ## 8. Known limits
 
-- The old `households.rw` text column still exists but is no longer used; it can be dropped in a later migration once you have checked the conversion.
+- The old `households.rw` text column has been dropped (it shadowed the `rw()` relation). Households whose old text matched no RW (for example `12`) have no RW and need one picked on the edit page.
 - The sheet allows editing any past month. Changes are not logged until Phase 8's activity log exists.
 - Weight recorded through deposits is shown for comparison only; it does not enter the formula.
+
+## 8. Update: reduction-vs-target chart (P5-FE-2)
+
+The chart on the Waste Reduction page, the Chart.js decision (D4) and its install steps are in `docs/monitoring-chart.md`.

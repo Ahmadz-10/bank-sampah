@@ -123,6 +123,59 @@ class WasteReductionTest extends TestCase
         $this->assertModelExists($record);
     }
 
+    public function test_the_index_charts_reduction_against_target_with_gaps_for_empty_months(): void
+    {
+        app()->setLocale('id');
+        $this->record(1, ['reduction_percentage' => 30, 'target_percentage' => 25]);
+        $this->record(5, ['reduction_percentage' => 41.256, 'target_percentage' => 40]);
+
+        $this->actingAs($this->userWithRole('admin'))
+            ->get(route('waste-reductions.index', ['year' => 2026]))
+            ->assertOk()
+            ->assertSee('data-chart', false)
+            ->assertSee('<canvas', false)
+            ->assertViewHas('chart', function ($chart) {
+                [$reduction, $target] = $chart['series'];
+
+                return count($chart['labels']) === 12
+                    && $chart['labels'][4] === 'Mei'                       // Indonesian month name, not "May"
+                    && $reduction['data'][0] === 30.0
+                    && $reduction['data'][4] === 41.26                     // rounded to 2 decimals
+                    && $reduction['data'][1] === null                      // no weighing = a gap, never 0
+                    && $target['data'][0] === 25.0
+                    && $target['data'][1] === null
+                    && $target['dashed'] === true;
+            });
+    }
+
+    public function test_the_chart_is_replaced_by_a_message_when_the_year_has_no_data(): void
+    {
+        app()->setLocale('en');
+
+        $this->actingAs($this->userWithRole('admin'))
+            ->get(route('waste-reductions.index', ['year' => 2026]))
+            ->assertOk()
+            ->assertSee('No data to chart yet.')
+            ->assertDontSee('<canvas', false);
+    }
+
+    public function test_the_line_chart_component_escapes_its_text_and_skips_empty_series(): void
+    {
+        $series = [['label' => '"><script>alert(1)</script>', 'color' => 'success', 'data' => [10, null, 20]]];
+
+        $this->blade('<x-line-chart :title="$title" :labels="$labels" :series="$series" unit="%" />', [
+            'title' => 'Title "quoted"',
+            'labels' => ['Jan', 'Feb', 'Mar'],
+            'series' => $series,
+        ])
+            ->assertSee('<canvas role="img"', false)
+            ->assertDontSee('<script>alert(1)</script>', false);
+
+        $this->blade('<x-line-chart title="x" :labels="[\'Jan\']" :series="[[\'label\' => \'A\', \'data\' => [null]]]" empty-text="Nothing yet" />')
+            ->assertSee('Nothing yet')
+            ->assertDontSee('<canvas', false);
+    }
+
     public function test_the_target_met_flag(): void
     {
         $this->assertTrue($this->record(1, ['reduction_percentage' => 30, 'target_percentage' => 30])->metTarget());

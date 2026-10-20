@@ -89,4 +89,38 @@ class MonitoringService
             ->groupBy(fn ($row) => (int) substr((string) $row->deposit_date, 5, 2))
             ->map(fn ($rows) => round((float) $rows->sum('weight'), 3));
     }
+
+    /**
+     * The twelve months of a year as ['month' => 1..12, 'record' => the month's record or null].
+     *
+     * @return Collection<int, array{month: int, record: ?MonthlyWasteReduction}>
+     */
+    public function monthlyRows(int $year): Collection
+    {
+        $records = MonthlyWasteReduction::query()->where('year', $year)->get()->keyBy('month');
+
+        return collect(range(1, 12))->map(fn (int $month) => ['month' => $month, 'record' => $records->get($month)]);
+    }
+
+    /**
+     * Data for the reduction-vs-target line chart: one point per month, null where nothing was weighed.
+     * Used by the Waste Reduction page and the dashboard, so both always draw the same thing.
+     *
+     * @param  Collection<int, array{month: int, record: ?MonthlyWasteReduction}>  $rows
+     * @return array{labels: array<int, string>, series: array<int, array<string, mixed>>}
+     */
+    public function reductionChart(Collection $rows): array
+    {
+        $percent = fn (string $column) => $rows
+            ->map(fn (array $row) => $row['record'] ? round((float) $row['record']->{$column}, 2) : null)
+            ->all();
+
+        return [
+            'labels' => $rows->map(fn (array $row) => Carbon::create(2000, $row['month'], 1)->translatedFormat('M'))->all(),
+            'series' => [
+                ['label' => __('Reduction'), 'color' => 'success', 'dashed' => false, 'data' => $percent('reduction_percentage')],
+                ['label' => __('Target'), 'color' => 'primary', 'dashed' => true, 'data' => $percent('target_percentage')],
+            ],
+        ];
+    }
 }

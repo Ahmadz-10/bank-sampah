@@ -68,7 +68,9 @@ class RoleAccessTest extends TestCase
             'survey-households'   => ['admin', 'officer'],
             'validate-surveys'    => ['admin'],
             'manage-transactions' => ['admin', 'officer'],
+            'correct-transactions' => ['admin'],
             'manage-monitoring'   => ['admin'],
+            'manage-weighings'    => ['admin', 'officer'],
             'view-reports'        => ['admin', 'viewer'],
         ];
 

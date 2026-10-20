@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name')) · {{ config('app.name') }}</title>
-    @vite(['resources/css/app.scss', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
 <body class="bg-body-tertiary">
@@ -42,10 +42,24 @@
                     <div class="alert alert-success" role="alert">{{ session('status') }}</div>
                 @endif
 
+                @if (session('error'))
+                    <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                @endif
+
                 @yield('content')
             </main>
         </div>
     </div>
+
+    {{-- Any <form data-confirm="..."> asks for confirmation before submitting. --}}
+    <script>
+        document.addEventListener('submit', function (event) {
+            var message = event.target.dataset ? event.target.dataset.confirm : null;
+            if (message && !window.confirm(message)) {
+                event.preventDefault();
+            }
+        });
+    </script>
 
     @stack('scripts')
 </body>

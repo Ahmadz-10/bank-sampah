@@ -32,7 +32,9 @@ return [
 
         // Transactions, monitoring, reports
         'manage-transactions' => ['admin', 'officer'], // deposits + sales
+        'correct-transactions' => ['admin'],           // void deposits / sales
         'manage-monitoring'  => ['admin'],
+        'manage-weighings'   => ['admin', 'officer'],  // monthly RW weighing sheet
         'view-reports'       => ['admin', 'viewer'],
     ],
 ];

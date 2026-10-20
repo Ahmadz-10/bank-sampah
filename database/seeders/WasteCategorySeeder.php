@@ -5,30 +5,32 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * The kelurahan's real price list (workbook "Buku_laporan_sampah", sheet 2),
+ * with each category mapped to one of the four report groups.
+ * Prices are per kg, in Rupiah, effective today. Safe to run again.
+ */
 class WasteCategorySeeder extends Seeder
 {
-    /**
-     * SAMPLE data. Replace names and prices with the real bank sampah price list.
-     */
     public function run(): void
     {
         $now = now();
         $today = $now->toDateString();
 
-        // code, name, unit, buy_price, sell_price
+        // code, name, report group, buy price, sell price
         $items = [
-            ['PLS', 'Plastik (botol PET)', 'kg',    2000, 2500],
-            ['KRT', 'Kertas',              'kg',    1000, 1300],
-            ['KRD', 'Kardus',              'kg',    1500, 1900],
-            ['LGM', 'Logam',               'kg',    4000, 5000],
-            ['KCA', 'Kaca',                'kg',     300,  500],
-            ['MNJ', 'Minyak jelantah',     'liter', 4000, 5500],
+            ['ORG', 'Organik', 'organik',   200,   350],
+            ['PLS', 'Plastik', 'anorganik', 3000,  5000],
+            ['KRT', 'Kertas',  'anorganik', 1500,  2500],
+            ['LGM', 'Logam',   'anorganik', 8000,  12000],
+            ['B3',  'B3',      'b3',        0,     0],
+            ['RSD', 'Residu',  'residu',    0,     0],
         ];
 
-        foreach ($items as [$code, $name, $unit, $buy, $sell]) {
+        foreach ($items as [$code, $name, $group, $buy, $sell]) {
             DB::table('waste_categories')->updateOrInsert(
                 ['code' => $code],
-                ['name' => $name, 'unit' => $unit, 'is_active' => true, 'created_at' => $now, 'updated_at' => $now]
+                ['name' => $name, 'unit' => 'kg', 'waste_group' => $group, 'is_active' => true, 'created_at' => $now, 'updated_at' => $now]
             );
 
             $categoryId = DB::table('waste_categories')->where('code', $code)->value('id');
